@@ -11,6 +11,8 @@ const PORT = process.env.PORT || 5000;
 
 // Improved MongoDB connection
 const connectDB = async () => {
+  if (process.env.NODE_ENV === 'test') return;
+  
   try {
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/bookhub_db');
     console.log('Connected to MongoDB');
