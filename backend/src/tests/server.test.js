@@ -1,5 +1,22 @@
 const request = require('supertest');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const mongoose = require('mongoose');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const { MongoMemoryServer } = require('mongodb-memory-server');
 const app = require('../server');
+
+let mongoServer;
+
+beforeAll(async () => {
+  mongoServer = await MongoMemoryServer.create();
+  const mongoUri = mongoServer.getUri();
+  await mongoose.connect(mongoUri);
+});
+
+afterAll(async () => {
+  await mongoose.disconnect();
+  await mongoServer.stop();
+});
 
 describe('BookHub Backend', () => {
   describe('GET /health', () => {
