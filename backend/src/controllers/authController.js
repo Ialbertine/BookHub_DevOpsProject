@@ -47,7 +47,7 @@ const register = async (req, res) => {
       updatedAt: user.updatedAt,
     };
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "User registered successfully",
       data: {
@@ -62,7 +62,8 @@ const register = async (req, res) => {
         message: "Invalid user data",
         errors,
       });
-    } else if (error.name === "MongoError" && error.code === 11000) {
+    }
+    if (error.name === "MongoError" && error.code === 11000) {
       return res.status(400).json({
         success: false,
         message: "User with this email already exists",
@@ -70,7 +71,7 @@ const register = async (req, res) => {
     }
 
     console.error("Registration error:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Internal server error",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
@@ -116,7 +117,7 @@ const login = async (req, res) => {
 
     const token = generateToken(user._id);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "User logged in successfully",
       data: {
@@ -126,7 +127,7 @@ const login = async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Internal server error",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
