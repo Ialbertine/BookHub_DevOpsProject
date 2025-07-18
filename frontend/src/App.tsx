@@ -1,47 +1,56 @@
-import { useState, useEffect } from 'react';
-import './App.css';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
+import { Provider } from "react-redux";
+import { store } from "@/store/store";
+import Home from "@/pages/Home";
+import Register from "@/pages/Register";
+import Login from "@/pages/Login";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Layout from "@/pages/librarian/Layout";
+import LandingPage from "@/pages/librarian/LandingPage";
+import CreateBook from "@/pages/librarian/CreateBook";
+import ViewBook from "@/pages/librarian/ViewBook";
+import Profile from "@/pages/librarian/Profile";
 
-interface HealthStatus {
-  status: string;
-  message: string;
-  timestamp: string;
-}
-
-function App() {
-  const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch('/api/health')
-      .then((response) => response.json())
-      .then((data: HealthStatus) => {
-        setHealthStatus(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) return <div className="loading">Loading...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
-
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>BookHub</h1>
-        <p>Welcome to BookHub To the Book Management System</p>
-        {healthStatus && (
-          <div className="health-status">
-            <p>Backend Status: <span className="status-ok">{healthStatus.status}</span></p>
-            <p>{healthStatus.message}</p>
-          </div>
-        )}
-      </header>
-    </div>
+    <Provider store={store}>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+
+          {/* private routes */}
+          <Route
+            path="/librarian-dashboard"
+            element={
+              <ProtectedRoute requiredRole="librarian">
+                <Layout>
+                  <Outlet />
+                </Layout>
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<LandingPage />} />
+            <Route path="create-book" element={<CreateBook />} />
+            <Route path="view/:id" element={<ViewBook />} />
+            <Route path="profile" element={<Profile />} />
+          </Route>
+
+          {/* fallback route */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Router>
+    </Provider>
   );
-}
+};
 
 export default App;
