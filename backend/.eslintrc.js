@@ -12,6 +12,7 @@ module.exports = {
     ecmaVersion: 'latest',
   },
   rules: {
+    "quotes": "off",
     'comma-dangle': 'off',
     'eol-last': 'off',
     'no-console': 'off',
