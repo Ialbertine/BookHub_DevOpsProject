@@ -2,7 +2,7 @@ import axios from 'axios';
 import { store } from '../store/store';
 import { logout } from '../store/authSlice';
 
-const API_BASE_URL = "https://react-discovery-app-ialbertine.onrender.com";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Create axios instance
 const axiosInstance = axios.create({
