@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../model/user");
+const crypto = require("crypto");
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -16,7 +17,6 @@ const generateToken = (id) => {
 
 // Generate password reset token
 const generateResetToken = () => {
-  const crypto = require("crypto");
   const resetToken = crypto.randomBytes(32).toString("hex");
   const hashedToken = crypto
     .createHash("sha256")
@@ -31,10 +31,10 @@ const verifyToken = async (req, res, next) => {
     let token;
     
     if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer")
+      req.headers.authorization
+      && req.headers.authorization.startsWith("Bearer")
     ) {
-      token = req.headers.authorization.split(" ")[1];
+      [, token] = req.headers.authorization.split(" ");
     } else if (req.cookies?.token) {
       token = req.cookies.token;
     }
@@ -70,7 +70,7 @@ const verifyToken = async (req, res, next) => {
 
     // Attach user to request object
     req.user = user;
-    next();
+    return next();
   } catch (error) {
     if (error.name === "JsonWebTokenError") {
       return res.status(401).json({
@@ -85,7 +85,7 @@ const verifyToken = async (req, res, next) => {
       });
     }
     console.error("Authentication error:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Internal server error during authentication.",
     });
@@ -93,17 +93,13 @@ const verifyToken = async (req, res, next) => {
 };
 
 // Role based access control middleware
-const restrictTo = (...roles) => {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
+const restrictTo = (...roles) => (req, res, next) =>
+  roles.includes(req.user.role)
+    ? next()
+    : res.status(403).json({
         success: false,
         message: `Access denied. Required role: ${roles.join(" or ")}.`,
       });
-    }
-    next();
-  };
-};
 
 module.exports = {
   generateToken,

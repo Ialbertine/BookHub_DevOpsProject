@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema(
       minlength: [2, "Name must be at least 2 characters long"],
       maxlength: [20, "Name cannot exceed 20 characters"],
       validate: {
-        validator: function (name) {
+        validator: function nameValidator(name) {
           return /^[a-zA-Z\s\-']+$/.test(name);
         },
         message:
@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       validate: {
-        validator: function (email) {
+        validator: function emailValidator(email) {
           return validator.isEmail(email);
         },
         message: "Please provide a valid email address",
@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
       required: [true, "Password is required"],
       minlength: [8, "Password must be at least 8 characters long"],
       validate: {
-        validator: function (password) {
+        validator: function passwordValidator(password) {
           // At least one uppercase, one lowercase, one number, one special character
           return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(
             password
@@ -64,7 +64,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
       validate: {
-        validator: function (url) {
+        validator: function profileImageValidator(url) {
           if (!url) return true;
           return validator.isURL(url, {
             protocols: ["http", "https"],
@@ -128,7 +128,7 @@ const userSchema = new mongoose.Schema(
   {
     timestamps: true,
     toJSON: {
-      transform: function (doc, ret) {
+      transform: function toJSONTransform(doc, ret) {
         delete ret.password;
         return ret;
       },

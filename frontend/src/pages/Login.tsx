@@ -45,11 +45,21 @@ const Login: React.FC = () => {
           navigate("/dashboard"); // fallback
         }
       }, 1000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       let errorMessage = "Login failed";
 
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        typeof (error as { response?: unknown }).response === "object" &&
+        (error as { response?: { data?: unknown } }).response !== null &&
+        "data" in (error as { response?: { data?: unknown } }).response! &&
+        typeof (error as { response?: { data?: unknown } }).response!.data === "object" &&
+        (error as { response?: { data?: unknown } }).response!.data !== null &&
+        "message" in (error as { response?: { data?: { message?: string } } }).response!.data!
+      ) {
+        errorMessage = (error as { response: { data: { message: string } } }).response.data.message;
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
