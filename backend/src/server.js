@@ -14,7 +14,7 @@ const connectDB = async () => {
   if (process.env.NODE_ENV === 'test') return;
   
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/bookhub_db');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/bookhub');
     console.log('Connected to MongoDB');
   } catch (err) {
     console.error('MongoDB connection error:', err);
@@ -22,6 +22,8 @@ const connectDB = async () => {
   }
 };
 connectDB();
+
+const authRoutes = require('./routes/auth');
 
 // middleware configuration
 app.use(helmet({
@@ -53,6 +55,8 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+app.use('/api/auth', authRoutes);
 
 // API routes
 app.get('/api', (req, res) => {
