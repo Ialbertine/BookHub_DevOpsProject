@@ -1,6 +1,6 @@
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const User = require("../model/user");
-const crypto = require("crypto");
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -93,13 +93,13 @@ const verifyToken = async (req, res, next) => {
 };
 
 // Role based access control middleware
-const restrictTo = (...roles) => (req, res, next) =>
-  roles.includes(req.user.role)
-    ? next()
-    : res.status(403).json({
-        success: false,
-        message: `Access denied. Required role: ${roles.join(" or ")}.`,
-      });
+const restrictTo = (...roles) => (req, res, next) => {
+  if (roles.includes(req.user.role)) return next();
+  return res.status(403).json({
+    success: false,
+    message: `Access denied. Required role: ${roles.join(" or ")}.`,
+  });
+};
 
 module.exports = {
   generateToken,

@@ -5,7 +5,12 @@ const { generateToken } = require("../middleware/auth");
 // register user
 const register = async (req, res) => {
   try {
-    const { FullName, email, password, role } = req.body;
+    const {
+      FullName,
+      email,
+      password,
+      role,
+    } = req.body;
 
     // to check if user already exists
     const existingUser = await User.findOne({ email });

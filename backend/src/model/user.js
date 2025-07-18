@@ -129,8 +129,8 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
     toJSON: {
       transform: function toJSONTransform(doc, ret) {
-        delete ret.password;
-        return ret;
+        const { password, ...rest } = ret;
+        return rest;
       },
     },
     toObject: {
