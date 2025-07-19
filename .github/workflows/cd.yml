@@ -40,4 +40,5 @@ jobs:
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }} 
           images: 'ialbertine/frontend:latest'
+          resource-group-name: ${{ secrets.AZURE_RESOURCE_GROUP }}
           
