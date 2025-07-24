@@ -1,0 +1,5 @@
+location = "centralindia"
+mongo_uri = "mongodb+srv://username:password@cluster.mongodb.net/database"
+docker_username = "your_docker_username"
+docker_password = "your_docker_personal_access_token"
+jwt_secret = "your_very_secure_jwt_secret_key_here"
