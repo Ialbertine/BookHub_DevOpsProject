@@ -1,0 +1,339 @@
+name: CI/CD Pipeline with Security
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  REGISTRY: docker.io
+  BACKEND_IMAGE: ialbertine/backend
+  FRONTEND_IMAGE: ialbertine/frontend
+
+jobs:
+  # ===== SECURITY SCANNING =====
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+    
+    - name: Run OWASP ZAP Security Scan
+      uses: zaproxy/action-full-scan@v0.8.0
+      with:
+        target: 'http://localhost:3000'
+        rules_file_name: '.zap/rules.tsv'
+        cmd_options: '-a'
+
+  # ===== BACKEND CI =====
+  backend-ci:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./backend
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run ESLint
+      run: npm run lint
+    
+    - name: Run security audit
+      run: npm audit --audit-level=moderate
+    
+    - name: Run tests with coverage
+      run: npm test
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        directory: ./backend/coverage
+        flags: backend
+
+  # ===== FRONTEND CI =====
+  frontend-ci:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./frontend
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run ESLint
+      run: npm run lint
+    
+    - name: Run security audit
+      run: npm audit --audit-level=moderate
+    
+    - name: Run tests with coverage
+      run: npm run test:coverage
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        directory: ./frontend/coverage
+        flags: frontend
+
+  # ===== CONTAINER SECURITY =====
+  container-security:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    needs: [backend-ci, frontend-ci]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    - name: Build backend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        push: false
+        tags: ${{ env.BACKEND_IMAGE }}:security-scan
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Build frontend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        push: false
+        tags: ${{ env.FRONTEND_IMAGE }}:security-scan
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Run Trivy vulnerability scanner on backend image
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: '${{ env.BACKEND_IMAGE }}:security-scan'
+        format: 'sarif'
+        output: 'trivy-backend-results.sarif'
+    
+    - name: Run Trivy vulnerability scanner on frontend image
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: '${{ env.FRONTEND_IMAGE }}:security-scan'
+        format: 'sarif'
+        output: 'trivy-frontend-results.sarif'
+    
+    - name: Upload container scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-backend-results.sarif'
+    
+    - name: Upload frontend container scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-frontend-results.sarif'
+
+  # ===== DEPLOYMENT =====
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [security-scan, backend-ci, frontend-ci, container-security]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    - name: Build and push backend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        push: true
+        tags: ${{ env.BACKEND_IMAGE }}:latest,${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Build and push frontend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        push: true
+        tags: ${{ env.FRONTEND_IMAGE }}:latest,${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Configure Backend Environment
+      uses: azure/appservice-settings@v1
+      with:
+        app-name: ${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}
+        app-settings-json: |
+          [
+            {
+              "name": "MONGODB_URI",
+              "value": "${{ secrets.MONGODB_URI }}",
+              "slotSetting": false
+            },
+            {
+              "name": "NODE_ENV",
+              "value": "production",
+              "slotSetting": false
+            },
+            {
+              "name": "FRONTEND_URL",
+              "value": "https://${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}.azurewebsites.net",
+              "slotSetting": false
+            },
+            {
+              "name": "DEPLOYMENT_VERSION",
+              "value": "${{ github.sha }}",
+              "slotSetting": false
+            }
+          ]
+    
+    - name: Deploy Backend to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}
+        images: '${{ env.BACKEND_IMAGE }}:latest'
+        resource-group-name: ${{ secrets.AZURE_RESOURCE_GROUP }}
+    
+    - name: Deploy Frontend to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}
+        images: '${{ env.FRONTEND_IMAGE }}:latest'
+        resource-group-name: ${{ secrets.AZURE_RESOURCE_GROUP }}
+    
+    - name: Configure Frontend Environment
+      uses: azure/appservice-settings@v1
+      with:
+        app-name: ${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}
+        app-settings-json: |
+          [
+            {
+              "name": "VITE_API_URL",
+              "value": "https://${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}.azurewebsites.net",
+              "slotSetting": false
+            },
+            {
+              "name": "DEPLOYMENT_VERSION",
+              "value": "${{ github.sha }}",
+              "slotSetting": false
+            }
+          ]
+    
+    - name: Wait for Backend deployment
+      run: |
+        echo "Waiting for backend to be ready..."
+        sleep 30
+    
+    - name: Verify Backend deployment
+      run: |
+        BACKEND_URL="https://${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}.azurewebsites.net"
+        echo "Checking backend health at: $BACKEND_URL"
+        
+        for i in {1..10}; do
+          if curl -f -s "$BACKEND_URL/api/health" > /dev/null; then
+            echo "Backend is healthy!"
+            exit 0
+          fi
+          echo "Attempt $i: Backend not ready yet, waiting..."
+          sleep 10
+        done
+        echo "Backend health check failed after 10 attempts"
+        exit 1
+    
+    - name: Wait for Frontend deployment
+      run: |
+        echo "Waiting for frontend to be ready..."
+        sleep 30
+    
+    - name: Verify Frontend deployment
+      run: |
+        FRONTEND_URL="https://${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}.azurewebsites.net"
+        echo "Checking frontend at: $FRONTEND_URL"
+        
+        for i in {1..10}; do
+          if curl -f -s "$FRONTEND_URL" > /dev/null; then
+            echo "Frontend is accessible!"
+            exit 0
+          fi
+          echo "Attempt $i: Frontend not ready yet, waiting..."
+          sleep 10
+        done
+        echo "Frontend health check failed after 10 attempts"
+        exit 1
+    
+    - name: Deployment Summary
+      run: |
+        echo "Deployment completed successfully!"
+        echo "Deployment Version: ${{ github.sha }}"
+        echo "Backend: https://${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}.azurewebsites.net"
+        echo "Frontend: https://${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}.azurewebsites.net"
+        echo "Security scans completed and results uploaded to GitHub Security tab" 
