@@ -1,5 +1,6 @@
 const winston = require('winston');
 const path = require('path');
+const fs = require('fs');
 
 // Define log levels
 const levels = {
@@ -42,26 +43,41 @@ const format = winston.format.combine(
 const transports = [
   // Console transport
   new winston.transports.Console(),
-  
-  // File transport for errors
-  new winston.transports.File({
-    filename: path.join(__dirname, '../../logs/error.log'),
-    level: 'error',
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.json()
-    ),
-  }),
-  
-  // File transport for all logs
-  new winston.transports.File({
-    filename: path.join(__dirname, '../../logs/combined.log'),
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.json()
-    ),
-  }),
 ];
+
+// Only add file transports if not in test environment and logs directory exists
+if (process.env.NODE_ENV !== 'test') {
+  try {
+    const logsDir = path.join(__dirname, '../../logs');
+
+    // Create logs directory if it doesn't exist
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true });
+    }
+
+    // File transport for errors
+    transports.push(new winston.transports.File({
+      filename: path.join(logsDir, 'error.log'),
+      level: 'error',
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json()
+      ),
+    }));
+
+    // File transport for all logs
+    transports.push(new winston.transports.File({
+      filename: path.join(logsDir, 'combined.log'),
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json()
+      ),
+    }));
+  } catch (error) {
+    // If file logging fails, just use console transport
+    console.warn('File logging not available, using console only:', error.message);
+  }
+}
 
 // Create the logger
 const logger = winston.createLogger({

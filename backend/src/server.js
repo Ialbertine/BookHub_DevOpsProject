@@ -13,13 +13,13 @@ const PORT = process.env.PORT || 5000;
 // Improved MongoDB connection
 const connectDB = async () => {
   if (process.env.NODE_ENV === 'test') return;
-  
+
   try {
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/bookhub');
     logger.info('Connected to MongoDB successfully');
   } catch (err) {
     logger.error('MongoDB connection error:', err);
-    process.exit(1); 
+    process.exit(1);
   }
 };
 connectDB();
@@ -39,7 +39,7 @@ app.use(helmet({
   },
 }));
 
-const allowedOrigins = process.env.FRONTEND_URL 
+const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(',')
   : ['http://localhost:3000'];
 
@@ -56,11 +56,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // Health check route
 app.get('/api/health', (req, res) => {
-  logger.info('Health check requested', { 
-    ip: req.ip, 
-    userAgent: req.get('User-Agent') 
+  logger.info('Health check requested', {
+    ip: req.ip,
+    userAgent: req.get('User-Agent')
   });
-  
+
   res.status(200).json({
     status: 'OK',
     message: 'BookHub Backend is running',
@@ -84,6 +84,7 @@ app.use('*', (req, res) => {
 });
 
 // Error handler
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   logger.error('Unhandled error:', {
     error: err.message,
@@ -92,8 +93,8 @@ app.use((err, req, res, next) => {
     method: req.method,
     ip: req.ip,
   });
-  
-  res.status(500).json({ 
+
+  res.status(500).json({
     error: 'Something went wrong!',
     timestamp: new Date().toISOString(),
   });
