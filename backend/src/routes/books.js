@@ -1,3 +1,4 @@
+const router = require("express").Router();
 const { verifyToken, restrictTo } = require("../middleware/auth");
 const {
   getAllBooks,
@@ -6,7 +7,6 @@ const {
   updateBook,
   deleteBook,
 } = require("../controllers/bookController");
-const router = require("express").Router();
 
 // member routes access
 router.get("/all", verifyToken, getAllBooks);

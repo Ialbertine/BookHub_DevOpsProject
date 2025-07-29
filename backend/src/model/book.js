@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
 
-//validations for the book schema
+// validations for the book schema
 const bookValidators = {
   title: {
     validator: (value) => {
@@ -41,7 +40,7 @@ const bookValidators = {
   publishedDate: {
     validator: (value) => {
       if (!value) return false;
-      return value instanceof Date && !isNaN(value);
+      return value instanceof Date && !Number.isNaN(value);
     },
     message: 'Published date must be a valid date'
   },

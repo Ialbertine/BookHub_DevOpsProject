@@ -1,10 +1,15 @@
 const Book = require("../model/book");
-const User = require("../model/user");
 
 // search function
 const searchQuery = (queryParams) => {
-  const { search, genre, author, language, year } = queryParams;
-  let query = {};
+  const {
+    search,
+    genre,
+    author,
+    language,
+    year,
+  } = queryParams;
+  const query = {};
 
   if (search) {
     query.$or = [
@@ -38,8 +43,8 @@ const searchQuery = (queryParams) => {
 // get all books
 const getAllBooks = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 12;
     const skip = (page - 1) * limit;
     const sortBy = req.query.sortBy || "createdAt";
     const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
@@ -56,7 +61,7 @@ const getAllBooks = async (req, res) => {
     const authors = await Book.distinct("author");
     const languages = await Book.distinct("language");
 
-    res.status(200).json({
+    return res.status(200).json({
       data: {
         books,
         pagination: {
@@ -75,7 +80,7 @@ const getAllBooks = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -91,7 +96,7 @@ const getBookById = async (req, res) => {
       });
     }
 
-    res.status(200).json(book);
+    return res.status(200).json(book);
   } catch (error) {
     if (error.name === "CastError") {
       return res.status(404).json({
@@ -99,15 +104,22 @@ const getBookById = async (req, res) => {
         message: "Book not found",
       });
     }
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
 // create book librarian only
 const createBook = async (req, res) => {
   try {
-    const { title, author, description, genre, ISBN, language, publishedDate } =
-      req.body;
+    const {
+      title,
+      author,
+      description,
+      genre,
+      ISBN,
+      language,
+      publishedDate,
+    } = req.body;
 
     // Check if book with ISBN already exists
     const existingBook = await Book.findOne({ ISBN });
@@ -129,7 +141,7 @@ const createBook = async (req, res) => {
       createdBy: req.user._id,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Book created successfully",
       data: book,
@@ -142,13 +154,14 @@ const createBook = async (req, res) => {
         message: "Validation error",
         errors,
       });
-    } else if (error.code === 11000) {
+    }
+    if (error.code === 11000) {
       return res.status(400).json({
         success: false,
         message: "Book with this ISBN already exists",
       });
     }
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error while creating book",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
@@ -159,10 +172,17 @@ const createBook = async (req, res) => {
 // update book librarian only
 const updateBook = async (req, res) => {
   try {
-    const { title, author, description, genre, ISBN, language, publishedDate } =
-      req.body;
+    const {
+      title,
+      author,
+      description,
+      genre,
+      ISBN,
+      language,
+      publishedDate,
+    } = req.body;
 
-    let book = await Book.findById(req.params.id);
+    const book = await Book.findById(req.params.id);
     if (!book) {
       return res.status(404).json({
         success: false,
@@ -193,7 +213,7 @@ const updateBook = async (req, res) => {
 
     await book.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Book updated successfully",
       data: book,
@@ -206,13 +226,14 @@ const updateBook = async (req, res) => {
         message: "Validation error",
         errors,
       });
-    } else if (error.code === 11000) {
+    }
+    if (error.code === 11000) {
       return res.status(400).json({
         success: false,
         message: "Another book with this ISBN already exists",
       });
     }
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error while updating book",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
@@ -234,7 +255,7 @@ const deleteBook = async (req, res) => {
 
     await Book.findByIdAndDelete(req.params.id);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Book deleted successfully",
     });
@@ -246,7 +267,7 @@ const deleteBook = async (req, res) => {
       });
     }
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error while deleting book",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
