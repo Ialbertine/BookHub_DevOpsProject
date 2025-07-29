@@ -23,6 +23,13 @@ Book Hub is a Full-Stack web application designed to help users explore and disc
 - Testing with vitest
 - Linting with ESLint
 
+### Monitoring & Observability
+- Real-time application health monitoring
+- Comprehensive logging with Winston
+- Performance metrics tracking
+- Security alert system
+- Operational dashboard with alerts
+
 ## Installation
 - Node.js
 - MongoDB
