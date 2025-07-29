@@ -24,6 +24,7 @@ const connectDB = async () => {
 connectDB();
 
 const authRoutes = require('./routes/auth');
+const bookRoutes = require('./routes/books');
 
 // middleware configuration
 app.use(helmet({
@@ -62,6 +63,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/books', bookRoutes);
 
 // API routes
 app.get('/api', (req, res) => {
