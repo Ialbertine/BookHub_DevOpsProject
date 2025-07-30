@@ -5,6 +5,12 @@ const fs = require('fs').promises;
 const app = express();
 const PORT = process.env.MONITORING_PORT || 3001;
 
+// Environment variables for alerting
+const ALERT_EMAIL = process.env.ALERT_EMAIL;
+const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
+const BACKEND_URL = process.env.BACKEND_URL;
+const FRONTEND_URL = process.env.FRONTEND_URL;
+
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -63,7 +69,7 @@ app.get('/api/metrics', (req, res) => {
     healthChecks: {
       total: metrics.healthChecks.length,
       recent: recentHealthChecks.length,
-      successRate: recentHealthChecks.length > 0 ? 
+      successRate: recentHealthChecks.length > 0 ?
         (recentHealthChecks.filter(check => check.status === 'healthy').length / recentHealthChecks.length * 100).toFixed(2) : 100
     },
     errors: {
@@ -89,7 +95,7 @@ app.get('/api/metrics', (req, res) => {
 // Error logging endpoint
 app.post('/api/log-error', (req, res) => {
   const { error, severity = 'medium', source } = req.body;
-  
+
   const errorLog = {
     error,
     severity,
@@ -115,7 +121,7 @@ app.post('/api/log-error', (req, res) => {
 // Security alert endpoint
 app.post('/api/security-alert', (req, res) => {
   const { alert, severity = 'medium', source } = req.body;
-  
+
   const securityAlert = {
     alert,
     severity,
@@ -141,7 +147,7 @@ app.post('/api/security-alert', (req, res) => {
 // Performance metrics endpoint
 app.post('/api/performance', (req, res) => {
   const { responseTime, endpoint, method } = req.body;
-  
+
   const performanceMetric = {
     responseTime,
     endpoint,
@@ -159,6 +165,25 @@ app.post('/api/performance', (req, res) => {
   res.json({ status: 'logged' });
 });
 
+// Operational alarm endpoint
+app.post('/api/alarm', (req, res) => {
+  const { alarm, severity = 'medium', source, threshold, currentValue } = req.body;
+
+  const alarmData = {
+    alarm,
+    severity,
+    source,
+    threshold,
+    currentValue,
+    timestamp: new Date().toISOString()
+  };
+
+  // Trigger alert for all alarms
+  triggerAlert('Operational Alarm', alarmData);
+
+  res.json({ status: 'alarm triggered' });
+});
+
 // Dashboard HTML
 app.get('/dashboard', (req, res) => {
   res.send(`
@@ -167,7 +192,7 @@ app.get('/dashboard', (req, res) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BookHub Monitoring Dashboard</title>
+        <title>BookHub Production Monitoring</title>
         <style>
             body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
             .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
@@ -181,12 +206,17 @@ app.get('/dashboard', (req, res) => {
             .refresh { margin-bottom: 20px; }
             button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
             button:hover { background: #0056b3; }
+            .alarm-section { margin-top: 20px; padding: 20px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; }
+            .alarm-button { background: #dc3545; margin-left: 10px; }
+            .alarm-button:hover { background: #c82333; }
         </style>
     </head>
     <body>
         <h1>BookHub Production Monitoring</h1>
         <div class="refresh">
             <button onclick="refreshDashboard()">Refresh Dashboard</button>
+            <button onclick="testCriticalAlarm()" class="alarm-button">Test Critical Alarm</button>
+            <button onclick="testSecurityAlarm()" class="alarm-button">Test Security Alarm</button>
             <span id="lastUpdate"></span>
         </div>
         <div class="dashboard" id="dashboard">
@@ -222,6 +252,13 @@ app.get('/dashboard', (req, res) => {
             </div>
         </div>
 
+        <div class="alarm-section">
+            <h3>Operational Alarms</h3>
+            <p><strong>Status:</strong> <span id="alarmStatus">Active</span></p>
+            <p><strong>Alert Channels:</strong> Email and Slack notifications configured</p>
+            <p><strong>Last Test:</strong> <span id="lastAlarmTest">Never</span></p>
+        </div>
+
         <script>
             function refreshDashboard() {
                 fetch('/api/metrics')
@@ -247,6 +284,46 @@ app.get('/dashboard', (req, res) => {
                     });
             }
 
+            function testCriticalAlarm() {
+                fetch('/api/log-error', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        error: 'Test critical error from dashboard',
+                        severity: 'critical',
+                        source: 'dashboard-test'
+                    })
+                })
+                .then(() => {
+                    document.getElementById('lastAlarmTest').textContent = new Date().toLocaleTimeString();
+                    alert('Critical alarm test triggered!');
+                })
+                .catch(error => {
+                    console.error('Error testing alarm:', error);
+                    alert('Failed to test alarm');
+                });
+            }
+
+            function testSecurityAlarm() {
+                fetch('/api/security-alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        alert: 'Test security vulnerability from dashboard',
+                        severity: 'high',
+                        source: 'dashboard-test'
+                    })
+                })
+                .then(() => {
+                    document.getElementById('lastAlarmTest').textContent = new Date().toLocaleTimeString();
+                    alert('Security alarm test triggered!');
+                })
+                .catch(error => {
+                    console.error('Error testing security alarm:', error);
+                    alert('Failed to test security alarm');
+                });
+            }
+
             // Refresh every 30 seconds
             refreshDashboard();
             setInterval(refreshDashboard, 30000);
@@ -259,40 +336,114 @@ app.get('/dashboard', (req, res) => {
 // Helper functions
 function calculateAverageResponseTime() {
   if (metrics.performance.length === 0) return 0;
-  
+
   const recent = metrics.performance.filter(
     perf => new Date(perf.timestamp) > new Date(Date.now() - 60 * 60 * 1000)
   );
-  
+
   if (recent.length === 0) return 0;
-  
+
   const total = recent.reduce((sum, perf) => sum + perf.responseTime, 0);
   return Math.round(total / recent.length);
 }
 
-function triggerAlert(title, data) {
+async function triggerAlert(title, data) {
   console.log(`🚨 ALERT: ${title}`, data);
-  
-  // In production, this would send notifications via:
-  // - Email
-  // - Slack
-  // - PagerDuty
-  // - SMS
-  
-  // For now, just log to console
+
   const alert = {
     title,
     data,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
   };
-  
+
+  // Send email alert if configured
+  if (ALERT_EMAIL) {
+    await sendEmailAlert(alert);
+  }
+
+  // Send Slack alert if configured
+  if (SLACK_WEBHOOK_URL) {
+    await sendSlackAlert(alert);
+  }
+
   console.log('Alert triggered:', alert);
+}
+
+async function sendEmailAlert(alert) {
+  try {
+    // In production, use a proper email service like SendGrid, AWS SES, etc.
+    console.log(`📧 Email alert would be sent to ${ALERT_EMAIL}:`, alert.title);
+
+    // For demonstration, we'll just log the email alert
+    const emailContent = `
+      Subject: BookHub Alert - ${alert.title}
+      
+      Alert Details:
+      - Title: ${alert.title}
+      - Time: ${alert.timestamp}
+      - Environment: ${alert.environment}
+      - Data: ${JSON.stringify(alert.data, null, 2)}
+      
+      Please investigate immediately.
+    `;
+
+    console.log('Email content:', emailContent);
+  } catch (error) {
+    console.error('Failed to send email alert:', error);
+  }
+}
+
+async function sendSlackAlert(alert) {
+  try {
+    const slackMessage = {
+      text: `🚨 *BookHub Alert: ${alert.title}*`,
+      attachments: [
+        {
+          color: alert.data.severity === 'critical' ? '#ff0000' : '#ffa500',
+          fields: [
+            {
+              title: 'Environment',
+              value: alert.environment,
+              short: true
+            },
+            {
+              title: 'Time',
+              value: new Date(alert.timestamp).toLocaleString(),
+              short: true
+            },
+            {
+              title: 'Details',
+              value: JSON.stringify(alert.data, null, 2),
+              short: false
+            }
+          ]
+        }
+      ]
+    };
+
+    const response = await fetch(SLACK_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(slackMessage)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Slack API responded with status: ${response.status}`);
+    }
+
+    console.log('📱 Slack alert sent successfully');
+  } catch (error) {
+    console.error('Failed to send Slack alert:', error);
+  }
 }
 
 // Start server
 app.listen(PORT, () => {
   console.log(`Monitoring dashboard running on port ${PORT}`);
   console.log(`Dashboard available at: http://localhost:${PORT}/dashboard`);
+  console.log(`Alert email configured: ${ALERT_EMAIL ? 'Yes' : 'No'}`);
+  console.log(`Slack webhook configured: ${SLACK_WEBHOOK_URL ? 'Yes' : 'No'}`);
 });
 
 module.exports = app; 

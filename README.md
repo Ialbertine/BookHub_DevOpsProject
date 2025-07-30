@@ -82,17 +82,16 @@ The project uses a comprehensive GitHub Actions CI/CD pipeline with integrated s
 
 #### **Security Components:**
 - 🔒 **Dependency Vulnerability Scanning** - npm audit with moderate+ severity
-- 🐳 **Container Security Scanning** - Trivy vulnerability scanner for Docker images
 - 🔍 **Code Security Scanning** - Trivy filesystem scan for code vulnerabilities
-- 🛡️ **Comprehensive Security Scanning** - Trivy vulnerability scanner for code and containers
+- 🐳 **Container Security Scanning** - Trivy vulnerability scanner for Docker images
+- 🛡️ **Comprehensive Security Scanning** - Trivy vulnerability scanner for codebase and containers
 - 📊 **Security Results Integration** - All results uploaded to GitHub Security tab
 
 #### **Pipeline Stages:**
 1. **Security Scan** - Vulnerability scanning of codebase and dependencies
 2. **Backend CI** - Linting, testing, security audit, coverage reporting
 3. **Frontend CI** - Linting, testing, building, security audit, coverage reporting
-4. **Container Security** - Docker image vulnerability scanning
-5. **Deployment** - Automated deployment to Azure Web Apps with health checks
+4. **Deployment** - Automated deployment to Azure Web Apps with health checks
 
 #### **Quality Gates:**
 - ✅ All tests must pass
