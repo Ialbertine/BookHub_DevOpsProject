@@ -61,10 +61,37 @@ resource "azurerm_linux_web_app" "bookhub_frontend" {
   }
 }
 
+# Linux Web App for Monitoring Dashboard
+resource "azurerm_linux_web_app" "bookhub_monitoring" {
+  name                = "bookhub-monitoring-${random_string.suffix.result}"
+  location            = var.location
+  resource_group_name = var.rg_name
+  service_plan_id     = azurerm_service_plan.bookhub.id
+
+  site_config {
+    application_stack {
+      docker_image     = "ialbertine/monitoring"     
+      docker_image_tag = "latest"
+    }
+    always_on = false  # MUST be false for F1 (free tier)
+  }
+
+  app_settings = {
+    "WEBSITES_PORT"        = "3001"
+    "NODE_ENV"             = "production"
+    "BACKEND_URL"          = "https://bookhub-backend-${random_string.suffix.result}.azurewebsites.net"
+    "FRONTEND_URL"         = "https://bookhub-frontend-${random_string.suffix.result}.azurewebsites.net"
+  }
+}
+
 output "backend_url" {
   value = "https://${azurerm_linux_web_app.bookhub_backend.default_hostname}"
 }
 
 output "frontend_url" {
   value = "https://${azurerm_linux_web_app.bookhub_frontend.default_hostname}"
+}
+
+output "monitoring_url" {
+  value = "https://${azurerm_linux_web_app.bookhub_monitoring.default_hostname}/dashboard"
 }

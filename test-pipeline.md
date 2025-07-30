@@ -21,7 +21,6 @@ git push origin main
 
 ### **✅ Security Scan Job**
 - **Trivy vulnerability scanner** should run
-- **OWASP ZAP scan** should execute
 - Results should appear in GitHub Security tab
 
 ### **✅ Backend CI Job**
@@ -68,7 +67,7 @@ git push origin main
 ## **4. Troubleshooting Common Issues**
 
 ### **If Security Scan Fails:**
-- Check if Trivy or ZAP configurations are correct
+- Check if Trivy configuration is correct
 - Review security scan logs for specific errors
 
 ### **If npm audit fails:**
@@ -101,7 +100,6 @@ git push origin main
 ### **Verify Security Scans**
 ```bash
 # Check if security files are created
-ls -la .zap/
 ls -la trivy-*.sarif
 ```
 

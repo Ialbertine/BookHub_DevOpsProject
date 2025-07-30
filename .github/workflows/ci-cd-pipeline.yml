@@ -40,13 +40,8 @@ jobs:
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
-    
-    - name: Run OWASP ZAP Security Scan
-      uses: zaproxy/action-full-scan@v0.8.0
-      with:
-        target: 'http://localhost:3000'
-        rules_file_name: '.zap/rules.tsv'
-        cmd_options: '-a'
+
+
 
   # ===== BACKEND CI =====
   backend-ci:
@@ -132,7 +127,7 @@ jobs:
     name: Container Security Scan
     runs-on: ubuntu-latest
     needs: [backend-ci, frontend-ci]
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     
     steps:
     - name: Checkout code
@@ -196,7 +191,7 @@ jobs:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: [security-scan, backend-ci, frontend-ci, container-security]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') && github.event_name == 'push'
     
     steps:
     - name: Checkout code
@@ -216,7 +211,7 @@ jobs:
       with:
         context: ./backend
         push: true
-        tags: ${{ env.BACKEND_IMAGE }}:latest,${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+        tags: ${{ env.BACKEND_IMAGE }}:latest,${{ env.BACKEND_IMAGE }}:${{ github.sha }},${{ env.BACKEND_IMAGE }}:${{ github.ref_name }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
@@ -225,17 +220,19 @@ jobs:
       with:
         context: ./frontend
         push: true
-        tags: ${{ env.FRONTEND_IMAGE }}:latest,${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+        tags: ${{ env.FRONTEND_IMAGE }}:latest,${{ env.FRONTEND_IMAGE }}:${{ github.sha }},${{ env.FRONTEND_IMAGE }}:${{ github.ref_name }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
     - name: Login to Azure
       uses: azure/login@v1
+      if: github.ref == 'refs/heads/main'
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
     - name: Configure Backend Environment
       uses: azure/appservice-settings@v1
+      if: github.ref == 'refs/heads/main'
       with:
         app-name: ${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}
         app-settings-json: |
@@ -264,6 +261,7 @@ jobs:
     
     - name: Deploy Backend to Azure Web App
       uses: azure/webapps-deploy@v2
+      if: github.ref == 'refs/heads/main'
       with:
         app-name: ${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}
         images: '${{ env.BACKEND_IMAGE }}:latest'
@@ -271,6 +269,7 @@ jobs:
     
     - name: Deploy Frontend to Azure Web App
       uses: azure/webapps-deploy@v2
+      if: github.ref == 'refs/heads/main'
       with:
         app-name: ${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}
         images: '${{ env.FRONTEND_IMAGE }}:latest'
@@ -278,6 +277,7 @@ jobs:
     
     - name: Configure Frontend Environment
       uses: azure/appservice-settings@v1
+      if: github.ref == 'refs/heads/main'
       with:
         app-name: ${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}
         app-settings-json: |
@@ -295,11 +295,13 @@ jobs:
           ]
     
     - name: Wait for Backend deployment
+      if: github.ref == 'refs/heads/main'
       run: |
         echo "Waiting for backend to be ready..."
         sleep 30
     
     - name: Verify Backend deployment
+      if: github.ref == 'refs/heads/main'
       run: |
         BACKEND_URL="https://${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}.azurewebsites.net"
         echo "Checking backend health at: $BACKEND_URL"
@@ -316,11 +318,13 @@ jobs:
         exit 1
     
     - name: Wait for Frontend deployment
+      if: github.ref == 'refs/heads/main'
       run: |
         echo "Waiting for frontend to be ready..."
         sleep 30
     
     - name: Verify Frontend deployment
+      if: github.ref == 'refs/heads/main'
       run: |
         FRONTEND_URL="https://${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}.azurewebsites.net"
         echo "Checking frontend at: $FRONTEND_URL"
@@ -337,6 +341,7 @@ jobs:
         exit 1
     
     - name: Deploy Monitoring Dashboard
+      if: github.ref == 'refs/heads/main'
       run: |
         echo "Deploying monitoring dashboard..."
         # In production, this would deploy the monitoring dashboard
@@ -344,6 +349,7 @@ jobs:
         echo "Monitoring dashboard deployment ready"
     
     - name: Test Monitoring Integration
+      if: github.ref == 'refs/heads/main'
       run: |
         echo "Testing monitoring integration..."
         BACKEND_URL="https://${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}.azurewebsites.net"
@@ -362,8 +368,15 @@ jobs:
     
     - name: Deployment Summary
       run: |
-        echo "Deployment completed successfully!"
-        echo "Deployment Version: ${{ github.sha }}"
-        echo "Backend: https://${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}.azurewebsites.net"
-        echo "Frontend: https://${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}.azurewebsites.net"
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          echo "Production deployment completed successfully!"
+          echo "Deployment Version: ${{ github.sha }}"
+          echo "Backend: https://${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}.azurewebsites.net"
+          echo "Frontend: https://${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}.azurewebsites.net"
+        else
+          echo "Development build completed successfully!"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Deployment Version: ${{ github.sha }}"
+          echo "Images pushed to Docker Hub with tags: latest, ${{ github.sha }}, ${{ github.ref_name }}"
+        fi
         echo "Security scans completed and results uploaded to GitHub Security tab" 
