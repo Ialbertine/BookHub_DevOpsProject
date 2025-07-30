@@ -184,13 +184,13 @@ jobs:
         exit-code: '0'
     
     - name: Upload Trivy scan results (Backend)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: trivy-backend-scan-results
         path: trivy-backend-results.sarif
     
     - name: Upload Trivy scan results (Frontend)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: trivy-frontend-scan-results
         path: trivy-frontend-results.sarif
