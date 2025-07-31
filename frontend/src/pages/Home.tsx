@@ -5,6 +5,12 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
       <h1 className="text-4xl font-bold text-amber-600 mb-8">Welcome to BookHub</h1>
+
+      <p className="text-lg text-gray-700 text-center max-w-2xl mb-8 px-4 leading-relaxed">
+        BookHub is a library management system for cataloging books, managing borrowing, and user accounts.
+        Perfect for librarians managing collections and readers discovering new books.
+      </p>
+
       <div className="flex gap-4">
         <Link
           to="/register"
