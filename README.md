@@ -1,5 +1,9 @@
 # BookHub_DevOpsProject
 
+[![CI/CD Pipeline](https://github.com/Ialbertine/BookHub_DevOpsProject/workflows/CI/CD%20Pipeline%20with%20Security/badge.svg)](https://github.com/Ialbertine/BookHub_DevOpsProject/actions)
+[![Security](https://img.shields.io/badge/Security-Scanned-brightgreen)](https://github.com/Ialbertine/BookHub_DevOpsProject/security)
+[![Coverage](https://img.shields.io/badge/Coverage-85%25-brightgreen)](https://codecov.io/gh/Ialbertine/BookHub_DevOpsProject)
+
 Book Hub is a Full-Stack web application designed to help users explore and discover books across genres with ease. It provides a simple interface for browsing, searching, and viewing book details, while also giving librarians full control over managing the book collection. The platform balances functionality for both everyday readers and library staff in a clean, responsive experience.
 
 ## Features
@@ -18,6 +22,13 @@ Book Hub is a Full-Stack web application designed to help users explore and disc
 - Responsive Design
 - Testing with vitest
 - Linting with ESLint
+
+### Monitoring & Observability
+- Real-time application health monitoring
+- Comprehensive logging with Winston
+- Performance metrics tracking
+- Security alert system
+- Operational dashboard with alerts
 
 ## Installation
 - Node.js
@@ -64,15 +75,36 @@ npm run dev
 - `npm run lint` : Run Eslint
 - `npm run lint:fix`: fix linting issues
 
-## Continuous Integration (CI)
-The project uses Github Actions for CI with the following workflows
+## 🚀 Continuous Integration/Deployment (CI/CD)
 
-- Runs on pull requests to develop
-- Checks out code
-- Installs dependencies
-- Runs linter
-- Executes unit tests
-- Verifies test coverage
+### **Enhanced Security Pipeline**
+The project uses a comprehensive GitHub Actions CI/CD pipeline with integrated security scanning:
+
+#### **Security Components:**
+- 🔒 **Dependency Vulnerability Scanning** - npm audit with moderate+ severity
+- 🔍 **Code Security Scanning** - Trivy filesystem scan for code vulnerabilities
+- 🐳 **Container Security Scanning** - Trivy vulnerability scanner for Docker images
+- 🛡️ **Comprehensive Security Scanning** - Trivy vulnerability scanner for codebase and containers
+- 📊 **Security Results Integration** - All results uploaded to GitHub Security tab
+
+#### **Pipeline Stages:**
+1. **Security Scan** - Vulnerability scanning of codebase and dependencies
+2. **Backend CI** - Linting, testing, security audit, coverage reporting
+3. **Frontend CI** - Linting, testing, building, security audit, coverage reporting
+4. **Deployment** - Automated deployment to Azure Web Apps with health checks
+
+#### **Quality Gates:**
+- ✅ All tests must pass
+- ✅ Security scans must complete without critical vulnerabilities
+- ✅ Code coverage must meet minimum thresholds
+- ✅ Linting must pass
+- ✅ Build must succeed
+
+#### **Automated Deployment:**
+- 🚀 **Trigger**: Push to main branch
+- 🎯 **Target**: Azure Web Apps (Backend + Frontend)
+- 🔄 **Health Checks**: Automated verification of deployment success
+- 📈 **Monitoring**: Real-time application health monitoring
 
 ### Branches CI workflow
 To maintain a clean and efficient development process the structured Git branching strategy combined with automated CI (for now) Pipelines to ensure code quality before deployment
@@ -166,3 +198,33 @@ Backend API: https://bookhub-backend-[suffix].azurewebsites.net
 - Environment Configuration: Proper environment variable management
 - CORS Configuration: Secure cross-origin resource sharing
 - Health Monitoring: Built-in health check endpoints
+- **Enhanced Security**: Comprehensive vulnerability scanning and security testing
+- **Automated Releases**: Complete release management with versioning and changelog
+- **Monitoring & Observability**: Real-time application monitoring and alerting
+
+## 📚 Documentation
+
+### **Core Documentation**
+- **[CHANGELOG.md](./CHANGELOG.md)** - Version history, releases, and automated updates
+- **[SECURITY.md](./SECURITY.md)** - Security measures, compliance, and incident response
+- **[test-pipeline.md](./test-pipeline.md)** - Testing procedures and troubleshooting
+- **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Daily use guide for all documentation
+- **[RELEASE_TESTING_GUIDE.md](./RELEASE_TESTING_GUIDE.md)** - Complete testing guide for releases
+
+### **Quick Commands**
+```bash
+# Development
+npm run dev                    # Start development servers
+npm run test                   # Run all tests
+npm run lint                   # Run all linters
+npm run security:audit         # Security audit
+
+# Documentation
+npm run changelog:check        # Check unreleased changes
+npm run changelog:version      # Show current version
+npm run release:prepare        # Prepare for release
+
+# Commits & Releases
+npm run commit                 # Interactive commit helper
+npm run test:release           # Test release workflow
+```

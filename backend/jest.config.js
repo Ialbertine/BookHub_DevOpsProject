@@ -8,5 +8,6 @@ module.exports = {
   coverageReporters: ['text', 'lcov', 'html'],
   testMatch: [
     '**/tests/**/*.test.js',
+    '**/src/tests/**/*.test.js',
   ],
 };

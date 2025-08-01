@@ -1,7 +1,7 @@
 {
   "name": "bookhub",
-  "version": "1.0.0",
-  "description": "BookHub - A comprehensive book management application",
+  "version": "1.2.0",
+  "description": "BookHub - A comprehensive book management application with enhanced security and CI/CD pipeline",
   "main": "index.js",
   "scripts": {
     "install:backend": "cd backend && npm install",
@@ -17,7 +17,13 @@
     "lint:frontend": "cd frontend && npm run lint",
     "lint": "npm run lint:backend && npm run lint:frontend",
     "build:frontend": "cd frontend && npm run build",
-    "start:backend": "cd backend && npm start"
+    "start:backend": "cd backend && npm start",
+    "changelog:check": "echo 'Checking CHANGELOG.md for latest version...' && grep -A 10 '## \\[Unreleased\\]' CHANGELOG.md",
+    "changelog:version": "echo 'Current version:' && grep '\"version\":' package.json",
+    "security:audit": "npm audit && cd backend && npm audit && cd ../frontend && npm audit",
+    "release:prepare": "echo 'Preparing release...' && npm run test && npm run lint && npm run security:audit",
+    "commit": "scripts\\commit.bat",
+    "test:release": "node scripts\\test-release.js"
   },
   "keywords": [
     "books",
