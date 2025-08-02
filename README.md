@@ -179,11 +179,9 @@ docker_password = "your-dockerhub-password"
 jwt_secret = "your-jwt-secret-key"
 ```
 ## Application URLs
-```bash
-Frontend: https://bookhub-frontend-9r7f.azurewebsites.net
-Backend API: https://bookhub-backend-9r7f.azurewebsites.net
-monitoring Dashboard: https://bookhub-monitoring-2n62.azurewebsites.net/dashboard 
-```
+- Frontend: https://bookhub-frontend-9r7f.azurewebsites.net
+- Backend API: https://bookhub-backend-9r7f.azurewebsites.net
+- monitoring Dashboard: https://bookhub-monitoring-2n62.azurewebsites.net/dashboard 
 
 ## Key Features
 - Containerized Applications: Both frontend and backend run in Docker containers
