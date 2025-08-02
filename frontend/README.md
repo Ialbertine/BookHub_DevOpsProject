@@ -1,69 +1,94 @@
-# React + TypeScript + Vite
+# BookHub Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + TypeScript + Vite frontend application for the BookHub library management system.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- User authentication (login/register)
+- Book management (CRUD operations)
+- Responsive design with modern UI
+- TypeScript for type safety
+- Redux Toolkit for state management
 
-## Expanding the ESLint configuration
+## Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js (v16 or higher)
+- npm or yarn
+- Backend server running (see backend README)
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Environment Setup
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+The application supports both local development and production environments through environment variables.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Local Development
+
+For local development, the application automatically uses the Vite proxy configuration to forward API requests to the backend server running on `http://localhost:5000`.
+
+If you need to override the API URL, create a `.env` file in the frontend directory:
+
+```bash
+# .env
+VITE_API_BASE_URL=http://localhost:5000
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Production
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+For production deployment, set the `VITE_API_BASE_URL` environment variable to your production backend URL:
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+VITE_API_BASE_URL=https://your-production-backend.com
 ```
+
+## Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Run tests
+npm run test
+```
+
+## Development
+
+The development server runs on `http://localhost:3000` and automatically proxies API requests to the backend server on `http://localhost:5000`.
+
+### Project Structure
+
+```
+src/
+├── api/           # API configuration and functions
+├── components/    # Reusable React components
+├── pages/         # Page components
+├── store/         # Redux store and slices
+├── types/         # TypeScript type definitions
+└── ...
+```
+
+### API Configuration
+
+The API configuration is handled in `src/api/axiosConfig.ts`:
+
+- Automatically detects development vs production environment
+- Uses Vite proxy in development (`/api` → `http://localhost:5000`)
+- Uses environment variable `VITE_API_BASE_URL` in production
+- Includes authentication token handling
+- Handles 401 errors with automatic logout
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run test` - Run tests
+- `npm run lint` - Run ESLint
+- `npm run type-check` - Run TypeScript type checking

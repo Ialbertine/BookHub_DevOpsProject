@@ -2,7 +2,7 @@ import axios from 'axios';
 import { store } from '../store/store';
 import { logout } from '../store/authSlice';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = 'https://bookhub-backend-9r7f.azurewebsites.net';
 
 // Create axios instance
 const axiosInstance = axios.create({
