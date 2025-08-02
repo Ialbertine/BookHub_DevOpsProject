@@ -1,9 +1,4 @@
 # BookHub_DevOpsProject
-
-[![CI/CD Pipeline](https://github.com/Ialbertine/BookHub_DevOpsProject/workflows/CI/CD%20Pipeline%20with%20Security/badge.svg)](https://github.com/Ialbertine/BookHub_DevOpsProject/actions)
-[![Security](https://img.shields.io/badge/Security-Scanned-brightgreen)](https://github.com/Ialbertine/BookHub_DevOpsProject/security)
-[![Coverage](https://img.shields.io/badge/Coverage-85%25-brightgreen)](https://codecov.io/gh/Ialbertine/BookHub_DevOpsProject)
-
 Book Hub is a Full-Stack web application designed to help users explore and discover books across genres with ease. It provides a simple interface for browsing, searching, and viewing book details, while also giving librarians full control over managing the book collection. The platform balances functionality for both everyday readers and library staff in a clean, responsive experience.
 
 ## Features
@@ -36,14 +31,13 @@ Book Hub is a Full-Stack web application designed to help users explore and disc
 - Git
 
 
-
 ### Backend Setup
 1. Clone the respository
 ```bash
 git clone https://github.com/Ialbertine/BookHub_DevOpsProject.git
 
 npm install #for the root installation
-npm run dev #for running both the backend and frontend
+npm run dev #for running both the backend and frontend at the same time
 cd backend
 ```
 2. Install dependencies
@@ -75,17 +69,17 @@ npm run dev
 - `npm run lint` : Run Eslint
 - `npm run lint:fix`: fix linting issues
 
-## 🚀 Continuous Integration/Deployment (CI/CD)
+## Continuous Integration/Deployment (CI/CD)
 
 ### **Enhanced Security Pipeline**
 The project uses a comprehensive GitHub Actions CI/CD pipeline with integrated security scanning:
 
 #### **Security Components:**
-- 🔒 **Dependency Vulnerability Scanning** - npm audit with moderate+ severity
-- 🔍 **Code Security Scanning** - Trivy filesystem scan for code vulnerabilities
-- 🐳 **Container Security Scanning** - Trivy vulnerability scanner for Docker images
-- 🛡️ **Comprehensive Security Scanning** - Trivy vulnerability scanner for codebase and containers
-- 📊 **Security Results Integration** - All results uploaded to GitHub Security tab
+- **Dependency Vulnerability Scanning** - npm audit with moderate+ severity
+- **Code Security Scanning** - Trivy filesystem scan for code vulnerabilities
+- **Container Security Scanning** - Trivy vulnerability scanner for Docker images
+- **Comprehensive Security Scanning** - Trivy vulnerability scanner for codebase and containers
+- **Security Results Integration** - All results uploaded to GitHub Security tab
 
 #### **Pipeline Stages:**
 1. **Security Scan** - Vulnerability scanning of codebase and dependencies
@@ -94,17 +88,17 @@ The project uses a comprehensive GitHub Actions CI/CD pipeline with integrated s
 4. **Deployment** - Automated deployment to Azure Web Apps with health checks
 
 #### **Quality Gates:**
-- ✅ All tests must pass
-- ✅ Security scans must complete without critical vulnerabilities
-- ✅ Code coverage must meet minimum thresholds
-- ✅ Linting must pass
-- ✅ Build must succeed
+- All tests must pass
+- Security scans must complete without critical vulnerabilities
+- Code coverage must meet minimum thresholds
+- Linting must pass
+- Build must succeed
 
 #### **Automated Deployment:**
-- 🚀 **Trigger**: Push to main branch
-- 🎯 **Target**: Azure Web Apps (Backend + Frontend)
-- 🔄 **Health Checks**: Automated verification of deployment success
-- 📈 **Monitoring**: Real-time application health monitoring
+- **Trigger**: Push to main branch
+- **Target**: Azure Web Apps (Backend + Frontend)
+- **Health Checks**: Automated verification of deployment success
+- **Monitoring**: Real-time application health monitoring
 
 ### Branches CI workflow
 To maintain a clean and efficient development process the structured Git branching strategy combined with automated CI (for now) Pipelines to ensure code quality before deployment
@@ -185,10 +179,10 @@ docker_password = "your-dockerhub-password"
 jwt_secret = "your-jwt-secret-key"
 ```
 ## Application URLs
-After deployment, access your application at:
 ```bash
-Frontend: https://bookhub-frontend-[suffix].azurewebsites.net
-Backend API: https://bookhub-backend-[suffix].azurewebsites.net
+Frontend: https://bookhub-frontend-9r7f.azurewebsites.net
+Backend API: https://bookhub-backend-9r7f.azurewebsites.net
+monitoring Dashboard: https://bookhub-monitoring-2n62.azurewebsites.net/dashboard 
 ```
 
 ## Key Features
@@ -202,29 +196,28 @@ Backend API: https://bookhub-backend-[suffix].azurewebsites.net
 - **Automated Releases**: Complete release management with versioning and changelog
 - **Monitoring & Observability**: Real-time application monitoring and alerting
 
-## 📚 Documentation
+## Documentation
 
 ### **Core Documentation**
 - **[CHANGELOG.md](./CHANGELOG.md)** - Version history, releases, and automated updates
-- **[SECURITY.md](./SECURITY.md)** - Security measures, compliance, and incident response
 - **[test-pipeline.md](./test-pipeline.md)** - Testing procedures and troubleshooting
-- **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Daily use guide for all documentation
-- **[RELEASE_TESTING_GUIDE.md](./RELEASE_TESTING_GUIDE.md)** - Complete testing guide for releases
+- **[phase.md](./phase.md)** - containing the url links for the project bookhub and link of the PRs i reviewed
+
 
 ### **Quick Commands**
 ```bash
 # Development
-npm run dev                    # Start development servers
-npm run test                   # Run all tests
-npm run lint                   # Run all linters
-npm run security:audit         # Security audit
+npm run dev                    
+npm run test                  
+npm run lint                  
+npm run security:audit       
 
 # Documentation
-npm run changelog:check        # Check unreleased changes
-npm run changelog:version      # Show current version
-npm run release:prepare        # Prepare for release
+npm run changelog:check        
+npm run changelog:version      
+npm run release:prepare      
 
 # Commits & Releases
-npm run commit                 # Interactive commit helper
-npm run test:release           # Test release workflow
+npm run commit                
+npm run test:release          
 ```
