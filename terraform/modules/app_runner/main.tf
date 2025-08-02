@@ -57,7 +57,7 @@ resource "azurerm_linux_web_app" "bookhub_frontend" {
   app_settings = {
     "WEBSITES_PORT"        = "3000"
     "NODE_ENV"             = "production"
-    "VITE_API_BASE_URL" = "https://bookhub-backend-${random_string.suffix.result}.azurewebsites.net"
+    "VITE_API_URL" = "https://bookhub-backend-${random_string.suffix.result}.azurewebsites.net"
   }
 }
 
