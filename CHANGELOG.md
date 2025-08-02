@@ -1,10 +1,5 @@
 # Changelog
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
-
 ### Added
 - **Complete Continuous Deployment (CD) Pipeline**: Professional-grade automated deployment
 - **Monitoring Dashboard**: Real-time application monitoring with operational alarms
@@ -23,8 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dependency Auditing**: npm audit integration for package vulnerabilities
 - **Security Quality Gates**: Automated security checks preventing insecure deployments
 - **Security Documentation**: Results uploaded to GitHub Security tab
-
-## [1.3.0] - 2024-01-XX
 
 ### Added
 - **Final Stage: Complete CD Pipeline**
@@ -57,7 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Monitoring dashboard integrated into existing infrastructure
   - Consistent deployment across backend, frontend, and monitoring
 
-## [1.2.0] - 2024-01-XX
 
 ### Added
 - **Enhanced Security Pipeline**
@@ -79,8 +71,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved error handling and reporting
   - Added deployment version tracking
 
-## [1.1.0] - 2024-01-XX
-
 ### Added
 - Basic CI/CD pipeline with GitHub Actions
 - Docker containerization for frontend and backend
@@ -99,8 +89,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented CORS configuration
 - Added JWT token authentication
 - Enhanced password hashing with bcrypt
-
-## [1.0.0] - 2024-01-XX
 
 ### Added
 - Initial BookHub application release
@@ -122,6 +110,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This project follows the [Conventional Commits](https://www.conventionalcommits.org/) specification.
 
+## Format
+```
+type(scope): description
+```
 ### Commit Types
 - `feat`: A new feature
 - `fix`: A bug fix
@@ -145,27 +137,25 @@ security: implement Trivy vulnerability scanning
 ci: rename pipeline to main.yml and enhance deployment
 ```
 
-## Version History
-
-### Version 1.3.0 - Final Stage: Complete CD Pipeline
+### Final Stage: Complete CD Pipeline
 - **Major Achievement**: Complete Continuous Deployment implementation
 - **Operational Excellence**: Real-time monitoring and alerting system
 - **Production Ready**: Live system management and troubleshooting
 - **Professional Grade**: Automated release process with version management
 
-### Version 1.2.0 - Enhanced Security Pipeline
+### Enhanced Security Pipeline
 - **Major Enhancement**: Complete DevSecOps implementation
 - **Security Focus**: Comprehensive vulnerability scanning
 - **Automation**: Full CI/CD pipeline with security integration
 - **Monitoring**: Real-time application health monitoring
 
-### Version 1.1.0 - Basic CI/CD Implementation
+### Basic CI/CD Implementation
 - **Automation**: Basic GitHub Actions CI/CD pipeline
 - **Containerization**: Docker-based deployment
 - **Infrastructure**: Azure Web App deployment with Terraform
 - **Security**: Basic application security measures
 
-### Version 1.0.0 - Initial Release
+### Initial Release
 - **Core Application**: Full-stack BookHub application
 - **Features**: User authentication, book management
 - **Technology Stack**: React, Express, MongoDB
@@ -224,5 +214,4 @@ ci: rename pipeline to main.yml and enhance deployment
 - **GitHub Security tab**: Security scan results and alerts
 
 ---
-
-For testing and verification procedures, see [test-pipeline.md](./test-pipeline.md). 
+Added test pipeline for testing and verification procedures before pushing to the production branch.
