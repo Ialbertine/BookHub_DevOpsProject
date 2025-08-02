@@ -9,11 +9,6 @@ const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// Log the API base URL (only in development)
-if (import.meta.env.DEV) {
-  console.log('API Base URL:', API_BASE_URL);
-}
-
 // Request interceptor to add token to headers
 axiosInstance.interceptors.request.use(
   (config) => {
@@ -22,16 +17,14 @@ axiosInstance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Log request details
-    if (import.meta.env.DEV) {
-      console.log('API Request:', {
-        method: config.method?.toUpperCase(),
-        url: config.url,
-        baseURL: config.baseURL,
-        fullURL: `${config.baseURL}${config.url}`,
-        data: config.data
-      });
-    }
+    // Log request details for debugging
+    console.log('API Request:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      baseURL: config.baseURL,
+      fullURL: `${config.baseURL}${config.url}`,
+      data: config.data
+    });
     
     return config;
   },
