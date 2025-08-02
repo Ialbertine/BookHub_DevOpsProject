@@ -1,6 +1,11 @@
 # BookHub_DevOpsProject
 Book Hub is a Full-Stack web application designed to help users explore and discover books across genres with ease. It provides a simple interface for browsing, searching, and viewing book details, while also giving librarians full control over managing the book collection. The platform balances functionality for both everyday readers and library staff in a clean, responsive experience.
 
+## Application URLs
+- Frontend: https://bookhub-frontend-9r7f.azurewebsites.net
+- Backend API: https://bookhub-backend-9r7f.azurewebsites.net
+- monitoring Dashboard: https://bookhub-monitoring-2n62.azurewebsites.net/dashboard 
+
 ## Features
 ### Backend
 - RESTful API with Express.js
@@ -178,10 +183,6 @@ docker_username = "your-dockerhub-username"
 docker_password = "your-dockerhub-password"
 jwt_secret = "your-jwt-secret-key"
 ```
-## Application URLs
-- Frontend: https://bookhub-frontend-9r7f.azurewebsites.net
-- Backend API: https://bookhub-backend-9r7f.azurewebsites.net
-- monitoring Dashboard: https://bookhub-monitoring-2n62.azurewebsites.net/dashboard 
 
 ## Key Features
 - Containerized Applications: Both frontend and backend run in Docker containers
