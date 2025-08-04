@@ -41,7 +41,7 @@ app.use(helmet({
 
 const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(',')
-  : ['http://localhost:3000'];
+  : ['http://localhost:3000', 'http://localhost:5173', 'https://bookhub-frontend-9r7f.azurewebsites.net', 'https://bookhub-staging-frontend-9r7f.azurewebsites.net'];
 
 app.use(cors({
   origin: allowedOrigins,

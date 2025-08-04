@@ -13,7 +13,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Health check endpoint - This is the main one you need
+// Health check endpoint
 app.get('/api/health', async (req, res) => {
   try {
     const healthStatus = {

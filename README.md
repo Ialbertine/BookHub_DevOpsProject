@@ -2,9 +2,16 @@
 Book Hub is a Full-Stack web application designed to help users explore and discover books across genres with ease. It provides a simple interface for browsing, searching, and viewing book details, while also giving librarians full control over managing the book collection. The platform balances functionality for both everyday readers and library staff in a clean, responsive experience.
 
 ## Application URLs
+
+### Production URLs
 - Frontend: https://bookhub-frontend-9r7f.azurewebsites.net
 - Backend API: https://bookhub-backend-9r7f.azurewebsites.net
-- monitoring Dashboard: https://bookhub-monitoring-2n62.azurewebsites.net/dashboard 
+- Monitoring Dashboard: https://bookhub-monitoring-2n62.azurewebsites.net/dashboard
+
+### Staging URLs
+- Frontend: https://bookhub-staging-frontend-9r7f.azurewebsites.net
+- Backend API: https://bookhub-staging-backend-9r7f.azurewebsites.net
+- Monitoring Dashboard: https://bookhub-staging-monitoring-9r7f.azurewebsites.net/dashboard
 
 ## Features
 ### Backend
@@ -100,8 +107,10 @@ The project uses a comprehensive GitHub Actions CI/CD pipeline with integrated s
 - Build must succeed
 
 #### **Automated Deployment:**
-- **Trigger**: Push to main branch
-- **Target**: Azure Web Apps (Backend + Frontend)
+- **Production Trigger**: Push to main branch
+- **Staging Trigger**: Push to develop branch
+- **Production Target**: Azure Web Apps (Backend + Frontend) with latest tags
+- **Staging Target**: Azure Web Apps (Backend + Frontend) with staging tags
 - **Health Checks**: Automated verification of deployment success
 - **Monitoring**: Real-time application health monitoring
 
@@ -112,10 +121,12 @@ To maintain a clean and efficient development process the structured Git branchi
 - represents the production ready state of the application
 - only updated Pull requests (PRs) from develop after passing all CI checks
 - Protected by github branch protection rules main requires PRs, approvals and CI checks
+- triggers production deployment with latest Docker tags
 
 2. Develop branch
 - the integration branch where all feature branches merge
 - must pass CI tests linting, unit tests, integration tests before merging into main
+- triggers staging deployment with staging Docker tags
 - used for staging/testing environments
 - All PRs must be opened to the develop branch
 - Use Semantic commit message like (feat:, fix:, chore:)
@@ -161,17 +172,33 @@ To maintain a clean and efficient development process the structured Git branchi
 - Docker Hub account
   
 ## Deploy Infrastructure
+
+## **Local Infrastructure Management**
+**Infrastructure changes are managed Locally**
+
+- **Local Terraform**: All infrastructure changes are applied locally
+- **CI/CD Applications**: Only application code is deployed through GitHub Actions
+- **Manual Control**: You have full control over when infrastructure changes are applied
+
+### both production and Staging Infrastructure
 ```bash
-#Navigate to terraform directory
+# Navigate to terraform directory
 cd terraform
 # Initialize Terraform
 terraform init
-# Plan deployment
-terraform plan 
-# Apply infrastructure
+# Plan staging deployment
+terraform plan
+# Apply staging infrastructure
 terraform apply
 ```
-## Environment Variables Required
+
+**Note:** Staging deployment is now fully automated via GitHub Actions. When you push to the `develop` branch, it automatically:
+- Builds and tests the application
+- Performs security scans
+- Deploys to staging environment
+- Runs health checks 
+
+### Production Environment Variables
 ```bash
 #Create a terraform.tfvars
 #check in the code file called terraform.tfvars.example
@@ -194,6 +221,7 @@ jwt_secret = "your-jwt-secret-key"
 - **Enhanced Security**: Comprehensive vulnerability scanning and security testing
 - **Automated Releases**: Complete release management with versioning and changelog
 - **Monitoring & Observability**: Real-time application monitoring and alerting
+- **Staging Environment**: Separate staging deployment with dedicated infrastructure and testing
 
 ## Documentation
 
