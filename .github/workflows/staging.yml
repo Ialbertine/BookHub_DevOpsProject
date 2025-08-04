@@ -232,8 +232,13 @@ jobs:
     - name: Deploy Infrastructure
       run: |
         cd terraform
+        echo "Current directory: $(pwd)"
+        echo "Files in current directory:"
+        ls -la
+        echo "Checking if staging.tfvars exists:"
+        ls -la staging.tfvars || echo "staging.tfvars not found"
         terraform init
-        terraform plan -var-file="terraform.tfvars" -out=tfplan
+        terraform plan -var-file="staging.tfvars" -out=tfplan
         terraform apply tfplan
     
     - name: Set up Docker Buildx
