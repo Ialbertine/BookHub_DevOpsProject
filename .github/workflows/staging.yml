@@ -233,7 +233,7 @@ jobs:
       run: |
         cd terraform
         terraform init
-        terraform plan -var-file="staging.tfvars" -out=tfplan
+        terraform plan -var-file="terraform.tfvars" -out=tfplan
         terraform apply tfplan
     
     - name: Set up Docker Buildx
@@ -278,11 +278,11 @@ jobs:
         app-name: ${{ secrets.AZURE_STAGING_BACKEND_WEBAPP_NAME }}
         app-settings-json: |
           [
-            {
-              "name": "MONGODB_URI",
-              "value": "${{ secrets.MONGODB_URI }}",
-              "slotSetting": false
-            },
+                         {
+               "name": "MONGODB_URI",
+               "value": "mongodb+srv://Ialbertine250:11w4ZZWqbOiKI3i9@cluster0.txb5n5b.mongodb.net/bookhub?retryWrites=true&w=majority&appName=Cluster0",
+               "slotSetting": false
+             },
             {
               "name": "NODE_ENV",
               "value": "staging",
