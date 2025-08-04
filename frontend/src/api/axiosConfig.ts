@@ -2,7 +2,20 @@ import axios from 'axios';
 import { store } from '../store/store';
 import { logout } from '../store/authSlice';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// Configuration that works with Vite proxy for local development and for environment variables
+const getApiBaseUrl = () => {
+  if (import.meta.env.DEV) {
+    return '';
+  }
+
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  return 'https://bookhub-backend-9r7f.azurewebsites.net';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Create axios instance
 const axiosInstance = axios.create({
@@ -23,7 +36,8 @@ axiosInstance.interceptors.request.use(
       url: config.url,
       baseURL: config.baseURL,
       fullURL: `${config.baseURL}${config.url}`,
-      data: config.data
+      data: config.data,
+      environment: import.meta.env.VITE_ENVIRONMENT || (import.meta.env.DEV ? 'development' : 'production')
     });
     
     return config;

@@ -1,12 +1,11 @@
-name: CI/CD Pipeline
+name: Staging Deployment Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [ develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ develop ]
 
-# Add permissions for security scanning
 permissions:
   security-events: write
   actions: read
@@ -17,9 +16,10 @@ env:
   BACKEND_IMAGE: ialbertine/backend
   FRONTEND_IMAGE: ialbertine/frontend
   MONITORING_IMAGE: ialbertine/monitoring
+  ENVIRONMENT: staging
 
 jobs:
-  # ===== SECURITY SCANNING =====
+  # SECURITY SCANNING 
   security-scan:
     name: Security Vulnerability Scan
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
           echo "Trivy scan completed - no SARIF file generated"
         fi
 
-  # ===== BACKEND CI =====
+  # BACKEND CI
   backend-ci:
     name: Backend CI
     runs-on: ubuntu-latest
@@ -82,9 +82,9 @@ jobs:
       if: always()
       with:
         directory: ./backend/coverage
-        flags: backend
+        flags: backend-staging
 
-  # ===== FRONTEND CI =====
+  # FRONTEND CI
   frontend-ci:
     name: Frontend CI
     runs-on: ubuntu-latest
@@ -124,14 +124,14 @@ jobs:
       if: always()
       with:
         directory: ./frontend/coverage
-        flags: frontend
+        flags: frontend-staging
 
-  # ===== CONTAINER SECURITY =====
+  # CONTAINER SECURITY
   container-security:
     name: Container Security Scan
     runs-on: ubuntu-latest
     needs: [backend-ci, frontend-ci]
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push'
     
     steps:
     - name: Checkout code
@@ -151,7 +151,7 @@ jobs:
       with:
         context: ./backend
         push: false
-        tags: ${{ env.BACKEND_IMAGE }}:security-scan-${{ github.run_id }}
+        tags: ${{ env.BACKEND_IMAGE }}:staging-scan-${{ github.run_id }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
@@ -160,7 +160,7 @@ jobs:
       with:
         context: ./frontend
         push: false
-        tags: ${{ env.FRONTEND_IMAGE }}:security-scan-${{ github.run_id }}
+        tags: ${{ env.FRONTEND_IMAGE }}:staging-scan-${{ github.run_id }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
@@ -168,9 +168,9 @@ jobs:
       uses: aquasecurity/trivy-action@master
       continue-on-error: true
       with:
-        image-ref: '${{ env.BACKEND_IMAGE }}:security-scan-${{ github.run_id }}'
+        image-ref: '${{ env.BACKEND_IMAGE }}:staging-scan-${{ github.run_id }}'
         format: 'sarif'
-        output: 'trivy-backend-results.sarif'
+        output: 'trivy-backend-staging-results.sarif'
         severity: 'CRITICAL,HIGH'
         exit-code: '0'
     
@@ -178,42 +178,42 @@ jobs:
       uses: aquasecurity/trivy-action@master
       continue-on-error: true
       with:
-        image-ref: '${{ env.FRONTEND_IMAGE }}:security-scan-${{ github.run_id }}'
+        image-ref: '${{ env.FRONTEND_IMAGE }}:staging-scan-${{ github.run_id }}'
         format: 'sarif'
-        output: 'trivy-frontend-results.sarif'
+        output: 'trivy-frontend-staging-results.sarif'
         severity: 'CRITICAL,HIGH'
         exit-code: '0'
     
     - name: Upload Trivy scan results (Backend)
       uses: actions/upload-artifact@v4
       with:
-        name: trivy-backend-scan-results
-        path: trivy-backend-results.sarif
+        name: trivy-backend-staging-scan-results
+        path: trivy-backend-staging-results.sarif
     
     - name: Upload Trivy scan results (Frontend)
       uses: actions/upload-artifact@v4
       with:
-        name: trivy-frontend-scan-results
-        path: trivy-frontend-results.sarif
+        name: trivy-frontend-staging-scan-results
+        path: trivy-frontend-staging-results.sarif
     
     - name: Clean up temporary images
       run: |
-        docker rmi ${{ env.BACKEND_IMAGE }}:security-scan-${{ github.run_id }} || true
-        docker rmi ${{ env.FRONTEND_IMAGE }}:security-scan-${{ github.run_id }} || true
+        docker rmi ${{ env.BACKEND_IMAGE }}:staging-scan-${{ github.run_id }} || true
+        docker rmi ${{ env.FRONTEND_IMAGE }}:staging-scan-${{ github.run_id }} || true
     
     - name: Display container scan results
       run: |
-        echo "Container security scan completed"
+        echo "Staging container security scan completed"
         echo "Note: Scan results are uploaded as artifacts regardless of findings"
         echo "Vulnerabilities will appear in GitHub Security tab"
-        rm -f trivy-backend-results.sarif trivy-frontend-results.sarif || true
+        rm -f trivy-backend-staging-results.sarif trivy-frontend-staging-results.sarif || true
 
-  # ===== DEPLOYMENT =====
-  deploy:
-    name: Deploy to Production
+  # STAGING DEPLOYMENT
+  deploy-staging:
+    name: Deploy to Staging
     runs-on: ubuntu-latest
     needs: [security-scan, backend-ci, frontend-ci, container-security]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     
     steps:
     - name: Checkout code
@@ -228,30 +228,30 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
-    - name: Build and push backend image
+    - name: Build and push backend image (staging)
       uses: docker/build-push-action@v5
       with:
         context: ./backend
         push: true
-        tags: ${{ env.BACKEND_IMAGE }}:latest,${{ env.BACKEND_IMAGE }}:${{ github.sha }},${{ env.BACKEND_IMAGE }}:${{ github.ref_name }}
+        tags: ${{ env.BACKEND_IMAGE }}:staging,${{ env.BACKEND_IMAGE }}:staging-${{ github.sha }},${{ env.BACKEND_IMAGE }}:develop
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
-    - name: Build and push frontend image
+    - name: Build and push frontend image (staging)
       uses: docker/build-push-action@v5
       with:
         context: ./frontend
         push: true
-        tags: ${{ env.FRONTEND_IMAGE }}:latest,${{ env.FRONTEND_IMAGE }}:${{ github.sha }},${{ env.FRONTEND_IMAGE }}:${{ github.ref_name }}
+        tags: ${{ env.FRONTEND_IMAGE }}:staging,${{ env.FRONTEND_IMAGE }}:staging-${{ github.sha }},${{ env.FRONTEND_IMAGE }}:develop
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
-    - name: Build and push monitoring dashboard image
+    - name: Build and push monitoring dashboard image (staging)
       uses: docker/build-push-action@v5
       with:
         context: ./monitoring
         push: true
-        tags: ${{ env.MONITORING_IMAGE }}:latest,${{ env.MONITORING_IMAGE }}:${{ github.sha }},${{ env.MONITORING_IMAGE }}:${{ github.ref_name }}
+        tags: ${{ env.MONITORING_IMAGE }}:staging,${{ env.MONITORING_IMAGE }}:staging-${{ github.sha }},${{ env.MONITORING_IMAGE }}:develop
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
@@ -260,10 +260,10 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
-    - name: Configure Backend Environment
+    - name: Configure Backend Environment (Staging)
       uses: azure/appservice-settings@v1
       with:
-        app-name: ${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}
+        app-name: ${{ secrets.AZURE_STAGING_BACKEND_WEBAPP_NAME }}
         app-settings-json: |
           [
             {
@@ -273,79 +273,89 @@ jobs:
             },
             {
               "name": "NODE_ENV",
-              "value": "production",
+              "value": "staging",
               "slotSetting": false
             },
             {
               "name": "FRONTEND_URL",
-              "value": "https://${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}.azurewebsites.net",
+              "value": "https://${{ secrets.AZURE_STAGING_FRONTEND_WEBAPP_NAME }}.azurewebsites.net",
               "slotSetting": false
             },
             {
               "name": "DEPLOYMENT_VERSION",
               "value": "${{ github.sha }}",
-              "slotSetting": false
-            }
-          ]
-    
-    - name: Deploy Backend to Azure Web App
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}
-        images: '${{ env.BACKEND_IMAGE }}:latest'
-        resource-group-name: ${{ secrets.AZURE_RESOURCE_GROUP }}
-    
-    - name: Deploy Frontend to Azure Web App
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}
-        images: '${{ env.FRONTEND_IMAGE }}:latest'
-        resource-group-name: ${{ secrets.AZURE_RESOURCE_GROUP }}
-    
-    - name: Configure Frontend Environment
-      uses: azure/appservice-settings@v1
-      with:
-        app-name: ${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}
-        app-settings-json: |
-          [
-            {
-              "name": "VITE_API_URL",
-              "value": "https://${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}.azurewebsites.net",
-              "slotSetting": false
-            },
-            {
-              "name": "DEPLOYMENT_VERSION",
-              "value": "${{ github.sha }}",
-              "slotSetting": false
-            }
-          ]
-    
-    - name: Deploy Monitoring to Azure Web App
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ secrets.AZURE_MONITORING_WEBAPP_NAME }}
-        images: '${{ env.MONITORING_IMAGE }}:latest'
-        resource-group-name: ${{ secrets.AZURE_RESOURCE_GROUP }}
-    
-    - name: Configure Monitoring Environment
-      uses: azure/appservice-settings@v1
-      with:
-        app-name: ${{ secrets.AZURE_MONITORING_WEBAPP_NAME }}
-        app-settings-json: |
-          [
-            {
-              "name": "BACKEND_URL",
-              "value": "https://${{ secrets.AZURE_BACKEND_WEBAPP_NAME }}.azurewebsites.net",
-              "slotSetting": false
-            },
-            {
-              "name": "FRONTEND_URL",
-              "value": "https://${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}.azurewebsites.net",
               "slotSetting": false
             },
             {
               "name": "ENVIRONMENT",
-              "value": "production",
+              "value": "staging",
+              "slotSetting": false
+            }
+          ]
+    
+    - name: Deploy Backend to Staging
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ secrets.AZURE_STAGING_BACKEND_WEBAPP_NAME }}
+        images: '${{ env.BACKEND_IMAGE }}:staging'
+        resource-group-name: ${{ secrets.AZURE_RESOURCE_GROUP }}
+    
+    - name: Deploy Frontend to Staging
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ secrets.AZURE_STAGING_FRONTEND_WEBAPP_NAME }}
+        images: '${{ env.FRONTEND_IMAGE }}:staging'
+        resource-group-name: ${{ secrets.AZURE_RESOURCE_GROUP }}
+    
+    - name: Configure Frontend Environment (Staging)
+      uses: azure/appservice-settings@v1
+      with:
+        app-name: ${{ secrets.AZURE_STAGING_FRONTEND_WEBAPP_NAME }}
+        app-settings-json: |
+          [
+            {
+              "name": "VITE_API_URL",
+              "value": "https://${{ secrets.AZURE_STAGING_BACKEND_WEBAPP_NAME }}.azurewebsites.net",
+              "slotSetting": false
+            },
+            {
+              "name": "DEPLOYMENT_VERSION",
+              "value": "${{ github.sha }}",
+              "slotSetting": false
+            },
+            {
+              "name": "VITE_ENVIRONMENT",
+              "value": "staging",
+              "slotSetting": false
+            }
+          ]
+    
+    - name: Deploy Monitoring to Staging
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ secrets.AZURE_STAGING_MONITORING_WEBAPP_NAME }}
+        images: '${{ env.MONITORING_IMAGE }}:staging'
+        resource-group-name: ${{ secrets.AZURE_RESOURCE_GROUP }}
+    
+    - name: Configure Monitoring Environment (Staging)
+      uses: azure/appservice-settings@v1
+      with:
+        app-name: ${{ secrets.AZURE_STAGING_MONITORING_WEBAPP_NAME }}
+        app-settings-json: |
+          [
+            {
+              "name": "BACKEND_URL",
+              "value": "https://${{ secrets.AZURE_STAGING_BACKEND_WEBAPP_NAME }}.azurewebsites.net",
+              "slotSetting": false
+            },
+            {
+              "name": "FRONTEND_URL",
+              "value": "https://${{ secrets.AZURE_STAGING_FRONTEND_WEBAPP_NAME }}.azurewebsites.net",
+              "slotSetting": false
+            },
+            {
+              "name": "ENVIRONMENT",
+              "value": "staging",
               "slotSetting": false
             }
           ]
