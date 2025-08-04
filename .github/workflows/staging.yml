@@ -219,27 +219,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: '1.5.0'
-    
     - name: Login to Azure
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-    
-    - name: Deploy Infrastructure
-      run: |
-        cd terraform
-        echo "Current directory: $(pwd)"
-        echo "Files in current directory:"
-        ls -la
-        echo "Checking if terraform.tfvars exists:"
-        ls -la terraform.tfvars || echo "terraform.tfvars not found"
-        terraform init
-        terraform plan -target=azurerm_linux_web_app.bookhub_staging_backend -target=azurerm_linux_web_app.bookhub_staging_frontend -target=azurerm_linux_web_app.bookhub_staging_monitoring -out=tfplan
-        terraform apply tfplan
     
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
