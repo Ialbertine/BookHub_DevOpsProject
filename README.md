@@ -194,13 +194,18 @@ cd terraform
 # Initialize Terraform
 terraform init
 # Plan staging deployment
-terraform plan -target=azurerm_service_plan.bookhub_staging \
-               -target=azurerm_linux_web_app.bookhub_staging_backend \
-               -target=azurerm_linux_web_app.bookhub_staging_frontend \
-               -target=azurerm_linux_web_app.bookhub_staging_monitoring
+terraform plan
 # Apply staging infrastructure
 terraform apply
 ```
+
+## **Local Infrastructure Management**
+
+**Infrastructure changes are managed LOCALLY**
+
+- **Local Terraform**: All infrastructure changes are applied locally
+- **CI/CD Applications**: Only application code is deployed through GitHub Actions
+- **Manual Control**: You have full control over when infrastructure changes are applied
 
 **Note:** Staging deployment is now fully automated via GitHub Actions. When you push to the `develop` branch, it automatically:
 - Builds and tests the application

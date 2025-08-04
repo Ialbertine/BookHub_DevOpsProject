@@ -219,27 +219,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: '1.5.0'
-    
     - name: Login to Azure
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-    
-    - name: Deploy Infrastructure
-      run: |
-        cd terraform
-        echo "Current directory: $(pwd)"
-        echo "Files in current directory:"
-        ls -la
-        echo "Checking if staging.tfvars exists:"
-        ls -la staging.tfvars || echo "staging.tfvars not found"
-        terraform init
-        terraform plan -var-file="staging.tfvars" -out=tfplan
-        terraform apply tfplan
     
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
