@@ -13,5 +13,11 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    proxy: {
+      '/api': {
+        target: 'https://bookhub-backend-9r7f.azurewebsites.net',
+        changeOrigin: true,
+      },
+    },
   },
 })
