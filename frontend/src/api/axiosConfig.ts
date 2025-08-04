@@ -8,10 +8,22 @@ const getApiBaseUrl = () => {
     return '';
   }
 
+  // Check for environment-specific API URL first
   if (import.meta.env.VITE_API_URL) {
+    console.log('Using VITE_API_URL:', import.meta.env.VITE_API_URL);
     return import.meta.env.VITE_API_URL;
   }
   
+  // Fallback based on current hostname
+  const hostname = window.location.hostname;
+  console.log('Current hostname:', hostname);
+  
+  if (hostname.includes('staging')) {
+    console.log('Detected staging environment, using staging backend');
+    return 'https://bookhub-staging-backend-9r7f.azurewebsites.net';
+  }
+  
+  console.log('Using production backend as fallback');
   return 'https://bookhub-backend-9r7f.azurewebsites.net';
 };
 
@@ -37,7 +49,9 @@ axiosInstance.interceptors.request.use(
       baseURL: config.baseURL,
       fullURL: `${config.baseURL}${config.url}`,
       data: config.data,
-      environment: import.meta.env.VITE_ENVIRONMENT || (import.meta.env.DEV ? 'development' : 'production')
+      environment: import.meta.env.VITE_ENVIRONMENT || (import.meta.env.DEV ? 'development' : 'production'),
+      viteApiUrl: import.meta.env.VITE_API_URL,
+      hostname: window.location.hostname
     });
     
     return config;

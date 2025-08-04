@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
 
-# Add permissions for security scanning
+# permission for security scanning
 permissions:
   security-events: write
   actions: read
@@ -19,7 +19,7 @@ env:
   MONITORING_IMAGE: ialbertine/monitoring
 
 jobs:
-  # ===== SECURITY SCANNING =====
+  # SECURITY SCANNING
   security-scan:
     name: Security Vulnerability Scan
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
           echo "Trivy scan completed - no SARIF file generated"
         fi
 
-  # ===== BACKEND CI =====
+  # BACKEND CI
   backend-ci:
     name: Backend CI
     runs-on: ubuntu-latest
@@ -84,7 +84,7 @@ jobs:
         directory: ./backend/coverage
         flags: backend
 
-  # ===== FRONTEND CI =====
+  # FRONTEND CI
   frontend-ci:
     name: Frontend CI
     runs-on: ubuntu-latest
@@ -126,7 +126,7 @@ jobs:
         directory: ./frontend/coverage
         flags: frontend
 
-  # ===== CONTAINER SECURITY =====
+  # CONTAINER SECURITY
   container-security:
     name: Container Security Scan
     runs-on: ubuntu-latest
@@ -208,7 +208,7 @@ jobs:
         echo "Vulnerabilities will appear in GitHub Security tab"
         rm -f trivy-backend-results.sarif trivy-frontend-results.sarif || true
 
-  # ===== DEPLOYMENT =====
+  # DEPLOYMENT
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest

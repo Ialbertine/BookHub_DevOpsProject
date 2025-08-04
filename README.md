@@ -3,17 +3,15 @@ Book Hub is a Full-Stack web application designed to help users explore and disc
 
 ## Application URLs
 
-### Production Environment
+### Production URLs
 - Frontend: https://bookhub-frontend-9r7f.azurewebsites.net
 - Backend API: https://bookhub-backend-9r7f.azurewebsites.net
 - Monitoring Dashboard: https://bookhub-monitoring-2n62.azurewebsites.net/dashboard
 
-### Staging Environment
+### Staging URLs
 - Frontend: https://bookhub-staging-frontend-9r7f.azurewebsites.net
 - Backend API: https://bookhub-staging-backend-9r7f.azurewebsites.net
 - Monitoring Dashboard: https://bookhub-staging-monitoring-9r7f.azurewebsites.net/dashboard
-
-*Note: Staging environment uses the same app service plan and Docker images as production for complete consistency* 
 
 ## Features
 ### Backend
@@ -175,19 +173,14 @@ To maintain a clean and efficient development process the structured Git branchi
   
 ## Deploy Infrastructure
 
-### Production Infrastructure
-```bash
-#Navigate to terraform directory
-cd terraform
-# Initialize Terraform
-terraform init
-# Plan deployment
-terraform plan 
-# Apply infrastructure
-terraform apply
-```
+## **Local Infrastructure Management**
+**Infrastructure changes are managed Locally**
 
-### Staging Infrastructure
+- **Local Terraform**: All infrastructure changes are applied locally
+- **CI/CD Applications**: Only application code is deployed through GitHub Actions
+- **Manual Control**: You have full control over when infrastructure changes are applied
+
+### both production and Staging Infrastructure
 ```bash
 # Navigate to terraform directory
 cd terraform
@@ -199,20 +192,11 @@ terraform plan
 terraform apply
 ```
 
-## **Local Infrastructure Management**
-
-**Infrastructure changes are managed LOCALLY**
-
-- **Local Terraform**: All infrastructure changes are applied locally
-- **CI/CD Applications**: Only application code is deployed through GitHub Actions
-- **Manual Control**: You have full control over when infrastructure changes are applied
-
 **Note:** Staging deployment is now fully automated via GitHub Actions. When you push to the `develop` branch, it automatically:
 - Builds and tests the application
 - Performs security scans
 - Deploys to staging environment
-- Runs health checks
-## Environment Variables Required
+- Runs health checks 
 
 ### Production Environment Variables
 ```bash
