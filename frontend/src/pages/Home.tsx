@@ -8,7 +8,11 @@ const Home: React.FC = () => {
 
       <p className="text-lg text-gray-700 text-center max-w-2xl mb-8 px-4 leading-relaxed">
         BookHub is a library management system for cataloging books, managing the books, and user accounts.
-        Perfect for librarians managing collections and readers 
+        Perfect for librarians managing collections and readers looking for a simple way to track their favorite books.
+        <br />
+        <br />
+        Get started by registering a new account or logging in if you already have one.
+        Explore our features and manage your book collection with ease!
       </p>
 
       <div className="flex gap-4">
