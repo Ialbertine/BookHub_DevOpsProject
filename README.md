@@ -6,7 +6,7 @@ Book Hub is a Full-Stack web application designed to help users explore and disc
 ### Production URLs
 - Frontend: https://bookhub-frontend-9r7f.azurewebsites.net
 - Backend API: https://bookhub-backend-9r7f.azurewebsites.net
-- Monitoring Dashboard: https://bookhub-monitoring-2n62.azurewebsites.net/dashboard
+- Monitoring Dashboard: https://bookhub-monitoring-9r7f.azurewebsites.net/dashboard
 
 ### Staging URLs
 - Frontend: https://bookhub-staging-frontend-9r7f.azurewebsites.net
