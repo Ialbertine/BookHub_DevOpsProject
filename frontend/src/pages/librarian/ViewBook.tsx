@@ -1,5 +1,5 @@
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { 
   BookOpen, 
@@ -60,7 +60,7 @@ const ViewBook: React.FC = () => {
   const [saving, setSaving] = useState(false)
 
   // Fetch book details
-  const fetchBook = async (): Promise<void> => {
+  const fetchBook = useCallback(async (): Promise<void> => {
     if (!id) {
       setError("Book ID is required")
       setLoading(false)
@@ -83,11 +83,11 @@ const ViewBook: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id])
 
   useEffect(() => {
     fetchBook()
-  }, [id])
+  }, [fetchBook])
 
   const handleEdit = (): void => {
     if (book) {
