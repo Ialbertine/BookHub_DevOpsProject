@@ -18,13 +18,13 @@ const Home: React.FC = () => {
       <div className="flex gap-4">
         <Link
           to="/register"
-          className="bg-blue-700 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition duration-200"
+          className="bg-blue-900 hover:bg-blue-200 text-white px-6 py-3 rounded-lg transition duration-200"
         >
           Register
         </Link>
         <Link
           to="/login"
-          className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition duration-200"
+          className="bg-green-900 hover:bg-green-200 text-white px-6 py-3 rounded-lg transition duration-200"
         >
           Login
         </Link>
